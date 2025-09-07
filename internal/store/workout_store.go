@@ -57,13 +57,14 @@ func (pg *PostgresWorkoutStore) CreateWorkout(workout *Workout) (*Workout, error
 		return nil, err
 	}
 
-	// we also need insert entries
-	for _, entry := range workout.Entries {
+	for i := range workout.Entries {
+		entry := &workout.Entries[i] // Get a pointer to the actual entry
+
 		query :=
 			`INSERT INTO workout_entries (workout_id, exercise_name, sets, reps, duration_seconds, weight, notes, order_index)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-		RETURNING id
-		`
+		RETURNING id`
+
 		err = tx.QueryRow(query, workout.ID, entry.ExerciseName, entry.Sets, entry.Reps, entry.DurationSeconds, entry.Weight, entry.Notes, entry.OrderIndex).Scan(&entry.ID)
 		if err != nil {
 			return nil, err
